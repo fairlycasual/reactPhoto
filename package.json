@@ -1,0 +1,11 @@
+{
+  "name": "reactphoto",
+  "version": "1.0.0",
+  "description": "react photo upload app",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "wh",
+  "license": "ISC"
+}
