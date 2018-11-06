@@ -1,28 +1,63 @@
 import React, { Component } from "react";
-import axios from 'axios';
+
 
 class App extends Component {
-  state = {
-    selectedFile: null,
-  }
+  constructor(props) {
+    super(props);
+    this.state = {
+      selectedFile: null,
+      imageURL: '',
+    }
 
+    // bind all my functions here
+      // this.function = this.function.bind(this);
+      
+  }
+  
+  // select a file
   fileSelectHandler = (event) => {
     this.setState({
-      selectedFile: event.target.files[0]
+      selectedFile: event.target.files
     })
   }
 
-  // use this method to dispatch file to server/db express? Axios -> firebase (video)? mongo?
-  fileUploadHandler = () => {
+  // dispatch file to server
+  fileUploadHandler = (e) => {
     console.log('upload clicked');
-   
+    e.preventDefault();
+
+    const data = new FormData();
+    data.append('file', this.state.selectedFile);
+
+    // send post request to server
+    fetch('http://localhost:8080/upload', {
+      method: 'POST',
+      body: data,
+    }).then(res => {
+      res.json().then(body => {
+        this.setState({ imageURL: `http://localhost:8000/${body.file}` });
+      })
+    })
+
+      console.log('posting to server, request data: ', this.state.selectedFile);
+     
+  
+    // refresh the gallery and pass it data as props 
+    // fetch, method: GET
+
+      //.then
+
   }
+
 
   render() {
     return (
       <div className="App">
-        <input type="file" onChange={this.fileSelectHandler}/>
-        <button onClick={this.fileUploadHandler}>Upload!</button>
+        <div className="upload">
+          <input type="file" onChange={this.fileSelectHandler} multiple ref = {(ref) => {this.uploadInput = ref;}}/>
+          <button onClick={this.fileUploadHandler}>Upload!</button>
+        </div>
+       
       </div>
     )
   }
