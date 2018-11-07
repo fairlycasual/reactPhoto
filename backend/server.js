@@ -1,23 +1,14 @@
 "use strict";
 
 var express = require('express');
-
 var path = require('path');
-
 var cookieParser = require('cookie-parser');
-
 var bodyParser = require('body-parser');
-
 var fileUpload = require('express-fileupload');
-
 var cors = require('cors');
-
 var MongoClient = require('mongodb').MongoClient;
-
 var assert = require('assert');
-
 var router = require('express-router');
-
 var App = require('../src/App');
 
 var app = express();
@@ -34,12 +25,14 @@ app.listen(port);
 console.log('Server running on port: ' + port + '🐶'); // DB Connection URL
 
 var url = 'mongodb://wilburFranklin:w1lburFrankl1n@ds121593.mlab.com:21593/photo_test'; // Database Name
-
 var dbName = 'photo_test'; // Create a new MongoClient
-
 var client = new MongoClient(url); // serve the main page
 
-app.use("*", App); // need an /upload route that will handle the above 
+app.use(express.static(__dirname + '/dist'));
+
+app.get("/", (req, res) => { 
+  res.sendFile(path.join(__dirname, '../dist/index.html'));
+});
 
 app.post('/upload', function () {
   client.connect(function (err, client) {
@@ -52,7 +45,7 @@ app.post('/upload', function () {
     }, function (err, r) {
       assert.equal(null, err);
       assert.equal(1, r.insertedCount); // Insert multiple documents
-
+      console.log('inserting this many files into mongo: ', r.insertedCount);
       db.collection('inserts').insertMany([{
         a: 2
       }, {

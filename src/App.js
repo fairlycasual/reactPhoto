@@ -35,8 +35,10 @@ class App extends Component {
       body: data,
     }).then(res => {
       res.json().then(body => {
-        this.setState({ imageURL: `http://localhost:8000/${body.file}` });
+        this.setState({ imageURL: `http://localhost:8080/${body.file}` });
       })
+    }).then(err => {
+      if (err) console.log('error posting: ', err);
     })
 
       console.log('posting to server, request data: ', this.state.selectedFile);
