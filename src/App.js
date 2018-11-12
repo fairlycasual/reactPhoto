@@ -19,6 +19,8 @@ class App extends Component {
     this.setState({
       selectedFile: event.target.files
     })
+
+    console.log('selected data: ', this.state.selectedFile);
   }
 
   // dispatch file to server
@@ -29,20 +31,20 @@ class App extends Component {
     const data = new FormData();
     data.append('file', this.state.selectedFile);
 
-    // send post request to server
-    fetch('http://localhost:8080/upload', {
-      method: 'POST',
-      body: data,
-    }).then(res => {
-      res.json().then(body => {
-        this.setState({ imageURL: `http://localhost:8080/${body.file}` });
+    // send post request to server with image files in array 
+      fetch('http://localhost:8080/upload', {
+        method: 'POST',
+        body: data,
+      }).then(res => {
+        res.json().then(body => {
+          this.setState({ imageURL: `http://localhost:8080/${body.file}` });
+        })
+      }).then(err => {
+        if (err) console.log('error posting: ', err);
       })
-    }).then(err => {
-      if (err) console.log('error posting: ', err);
-    })
 
-      console.log('posting to server, request data: ', this.state.selectedFile);
-     
+        console.log('posting to server, request data: ', this.state.selectedFile);
+      
   
     // refresh the gallery and pass it data as props 
     // fetch, method: GET
@@ -51,6 +53,29 @@ class App extends Component {
 
   }
 
+  getPhotoHandler = () => {
+    fetch('http://localhost:8080/read', {
+      method: 'GET',
+    }).then((res) => {
+      res.arrayBuffer().then((buffer) => {
+        var base64Flag = 'data:image/jpeg;base64,';
+        var imageStr = arrayBufferToBase64(buffer);
+    
+        document.querySelector('img').src = base64Flag + imageStr;
+      });
+    });
+  }
+
+  arrayBufferToBase64 = (buffer) => {
+    var binary = '';
+    var bytes = [].slice.call(new Uint8Array(buffer));
+  
+    bytes.forEach((b) => binary += String.fromCharCode(b));
+  
+    return window.btoa(binary);
+  };
+
+  // component did mount to generate gallery
 
   render() {
     return (
