@@ -8,10 +8,11 @@ var fileUpload = require('express-fileupload');
 var cors = require('cors');
 var MongoClient = require('mongodb').MongoClient;
 var router = require('express-router');
-var App = require('../src/App');
+var Blob = require('blob');
+const multer = require('multer');
 
 var firebase = require("firebase/app");
-var {Storage} = require('@google-cloud/storage');
+var { Storage } = require('@google-cloud/storage');
 const storageBucket = 'gs://reactphoto-332d3.appspot.com';
 var admin = require("firebase-admin");
 //const bucket = storage.bucket(storageBucket);
@@ -28,6 +29,9 @@ app.use(cookieParser());
 app.use(fileUpload());
 app.listen(port);
 console.log('Server running on port: ' + port + '🐶'); // DB Connection URL
+// Multer is required to process file uploads and make them available via req.files.
+var storage = multer.memoryStorage()
+var upload = multer({ storage: storage })
 
 // Initialize Firebase
 const config = {
@@ -39,14 +43,7 @@ const config = {
   messagingSenderId: "1023097647997"
 };
 admin.initializeApp(config);
-const storage = admin.storage();
-const bucket = storage.bucket();
 
-/* const storage = new Storage({
-  projectId: config.projectId,
-}); */
-
- 
 
 app.use(express.static(__dirname + '/dist'));
 
@@ -54,55 +51,10 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-app.post('/upload', function (fileListObj) {
+app.post('/upload', upload.single("file"), (req, res) => {
+  console.log('opening post of server.js, file: ', req.file);
 
-  let storageRef = storage.ref();
-  let imagesRef = storageRef.child('images');
-  let firebaseArr = [];
+	res.json({'msg': 'File uploaded successfully!', 'file': req.file});
 
-  for (image in fileListObj) {
-    
-    let blob = new Blob([JSON.stringify(image, null, 2)], {type : 'image/jpeg'})
-    let name = image.name + Date.now().toString;
-    const metadata = { contentType: image.type };
-    const task = imagesRef.child(name).put(blob, metadata);
-
-    task.on('state_changed', function(snapshot){
-      // Observe state change events such as progress, pause, and resume
-      // Get task progress, including the number of bytes uploaded and the total number of bytes to be uploaded
-      var progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-      console.log('Upload is ' + progress + '% done');
-      switch (snapshot.state) {
-        case firebase.storage.TaskState.PAUSED: // or 'paused'
-          console.log('Upload is paused');
-          break;
-        case firebase.storage.TaskState.RUNNING: // or 'running'
-          console.log('Upload is running');
-          break;
-      }
-    }, function(error) {
-      switch (error.code) {
-        case 'storage/unauthorized':
-          // User doesn't have permission to access the object
-          break;
-    
-        case 'storage/canceled':
-          // User canceled the upload
-          break;
-        case 'storage/unknown':
-          // Unknown error occurred, inspect error.serverResponse
-          break;
-      }
-    }, function() {
-      // Handle successful uploads on complete
-      // For instance, get the download URL: https://firebasestorage.googleapis.com/...
-      uploadTask.snapshot.ref.getDownloadURL().then(function(downloadURL) {
-        console.log('File available at', downloadURL);
-        firebaseArr.push(downloadURL);
-      });
-    });
-
-  }
-console.log('array of download urls: ', firebaseArr);
 
 });

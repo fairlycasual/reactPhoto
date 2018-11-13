@@ -29,9 +29,12 @@ class App extends Component {
     e.preventDefault();
 
     const data = new FormData();
-    data.append('file', this.state.selectedFile);
+    data.append('fileArray', this.state.selectedFile);
+
 
     // send post request to server with image files in array 
+    for (let i = 0; i < this.state.selectedFile.length; i++) {
+    
       fetch('http://localhost:8080/upload', {
         method: 'POST',
         body: data,
@@ -43,9 +46,9 @@ class App extends Component {
         if (err) console.log('error posting: ', err);
       })
 
-        console.log('posting to server, request data: ', this.state.selectedFile);
-      
-  
+        console.log('posting to server, request data sent from App.js: ', this.state.selectedFile[i]);
+    }
+    console.log('after for loop, formData object: ', data);
     // refresh the gallery and pass it data as props 
     // fetch, method: GET
 
