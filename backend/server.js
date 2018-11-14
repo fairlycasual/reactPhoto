@@ -1,26 +1,20 @@
 "use strict";
 
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
-var fileUpload = require('express-fileupload');
-var cors = require('cors');
-var MongoClient = require('mongodb').MongoClient;
-var router = require('express-router');
-var Blob = require('blob');
+const express = require('express');
+const path = require('path');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const fileUpload = require('express-fileupload');
+const cors = require('cors');
+const Blob = require('blob');
 const multer = require('multer');
-var FormData = require('form-data');
-var fs = require('fs');
+const FormData = require('form-data');
+const fs = require('fs');
+const admin = require('firebase-admin');
+const serviceAccount = require("../reactphoto-332d3-firebase-adminsdk-2o0k8-86f07ff19b.json");
+const app = express();
+const port = 8080;
 
-var firebase = require("firebase/app");
-var { Storage } = require('@google-cloud/storage');
-const storageBucket = 'gs://reactphoto-332d3.appspot.com';
-var admin = require('firebase-admin');
-var serviceAccount = require("../reactphoto-332d3-firebase-adminsdk-2o0k8-86f07ff19b.json");
-//const bucket = Storage.bucket(storageBucket);
-var app = express();
-var port = 8080;
 app.use(cors());
 app.use(bodyParser.json()); // get information from html forms
 
