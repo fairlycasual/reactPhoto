@@ -10,13 +10,15 @@ var MongoClient = require('mongodb').MongoClient;
 var router = require('express-router');
 var Blob = require('blob');
 const multer = require('multer');
+var FormData = require('form-data');
+var fs = require('fs');
 
 var firebase = require("firebase/app");
 var { Storage } = require('@google-cloud/storage');
 const storageBucket = 'gs://reactphoto-332d3.appspot.com';
-var admin = require("firebase-admin");
-//const bucket = storage.bucket(storageBucket);
-
+var admin = require('firebase-admin');
+var serviceAccount = require("../reactphoto-332d3-firebase-adminsdk-2o0k8-86f07ff19b.json");
+//const bucket = Storage.bucket(storageBucket);
 var app = express();
 var port = 8080;
 app.use(cors());
@@ -34,27 +36,34 @@ var storage = multer.memoryStorage()
 var upload = multer({ storage: storage })
 
 // Initialize Firebase
-const config = {
-  apiKey: "AIzaSyBAEdhnT3ZYCxDDBgvdaDFeMH1Ve1OPe6c",
-  authDomain: "reactphoto-332d3.firebaseapp.com",
-  databaseURL: "https://reactphoto-332d3.firebaseio.com",
-  projectId: "reactphoto-332d3",
-  storageBucket: "reactphoto-332d3.appspot.com",
-  messagingSenderId: "1023097647997"
-};
-admin.initializeApp(config);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: "https://reactphoto-332d3.firebaseio.com"
+});
 
+// initialize firebase storage
+var db = admin.database();
+var ref = db.ref("server/image-uploads");
+var imagesRef = ref.child("images");
 
+// serve static resources bundled by webpack
 app.use(express.static(__dirname + '/dist'));
+app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => { 
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-app.post('/upload', upload.single("file"), (req, res) => {
-  console.log('opening post of server.js, file: ', req.file);
+app.post('/upload', upload.any(), (req, res) => {
+  // convert the uploaded images to form
+  var form = new FormData();
+  form.append('imgFile', fs.createReadStream('req.file'));
+  console.log('opening post of server.js, file: ', form);
+	res.json({'msg': 'File uploaded successfully to node'});
 
-	res.json({'msg': 'File uploaded successfully!', 'file': req.file});
-
-
+  // need to determine if this is actually how to access the stream data? 
+  imagesRef.push({
+    title: 'imgUpload' + Date.now(),
+    image: form._streams[0]
+  });
 });
