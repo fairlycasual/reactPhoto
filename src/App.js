@@ -84,7 +84,7 @@ class App extends Component {
     return (
       <div className="App">
         <div className="upload">
-          <input type="file" onChange={this.fileSelectHandler} multiple ref = {(ref) => {this.uploadInput = ref;}}/>
+          <input type="file" name="imageUpload" onChange={this.fileSelectHandler} multiple ref = {(ref) => {this.uploadInput = ref;}}/>
           <button onClick={this.fileUploadHandler}>Upload!</button>
         </div>
        

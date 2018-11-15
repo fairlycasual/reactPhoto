@@ -48,11 +48,11 @@ app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
-app.post('/upload', upload.any(), (req, res) => {
+app.post('/upload', upload.any('fileArray'), (req, res) => {
   // convert the uploaded images to form
   var form = new FormData();
   form.append('imgFile', fs.createReadStream('req.file'));
-  console.log('opening post of server.js, file: ', form);
+  console.log('opening post of server.js, file: ', req.file);
 	res.json({'msg': 'File uploaded successfully to node'});
 
   // need to determine if this is actually how to access the stream data? 
@@ -60,4 +60,14 @@ app.post('/upload', upload.any(), (req, res) => {
     title: 'imgUpload' + Date.now(),
     image: form._streams[0]
   });
+
+  // let url = ref.getDownloadUrl();
+  // console.log('url?? ', url);
+
+  ref.on("value", function(snapshot) {
+    console.log('download url: ', snapshot.val());
+  }, function (errorObject) {
+    console.log("The read failed: " + errorObject.code);
+  });
+
 });
