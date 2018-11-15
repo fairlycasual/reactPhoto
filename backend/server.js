@@ -1,10 +1,10 @@
 "use strict";
 
 const express = require('express');
+const fileUpload = require('express-fileupload');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const fileUpload = require('express-fileupload');
 const cors = require('cors');
 const Blob = require('blob');
 const multer = require('multer');
@@ -12,12 +12,12 @@ const FormData = require('form-data');
 const fs = require('fs');
 const admin = require('firebase-admin');
 const serviceAccount = require("../reactphoto-332d3-firebase-adminsdk-2o0k8-86f07ff19b.json");
+
 const app = express();
 const port = 8080;
 
 app.use(cors());
 app.use(bodyParser.json()); // get information from html forms
-
 app.use(bodyParser.urlencoded({
   extended: false
 }));
@@ -42,17 +42,25 @@ var imagesRef = ref.child("images");
 
 // serve static resources bundled by webpack
 app.use(express.static(__dirname + '/dist'));
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.get("/", (req, res) => { 
   res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.post('/upload', upload.any('fileArray'), (req, res) => {
+  // if (Object.keys(req.files).length == 0) {
+  //   return res.status(400).send('No files were uploaded.');
+  // }
+  console.log('multer test, req.files: ', req.files);
+  let imageInput = req.files.filesInput;
+
   // convert the uploaded images to form
+  console.log('TESTTESTTEST, imageInput: ', imageInput);
   var form = new FormData();
+
   form.append('imgFile', fs.createReadStream('req.file'));
   console.log('opening post of server.js, file: ', req.file);
+
 	res.json({'msg': 'File uploaded successfully to node'});
 
   // need to determine if this is actually how to access the stream data? 
