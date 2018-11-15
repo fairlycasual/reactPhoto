@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-
+//import FileReader from 'filereader';
 
 class App extends Component {
   constructor(props) {
@@ -25,11 +25,13 @@ class App extends Component {
 
   // dispatch file to server
   fileUploadHandler = (e) => {
+    // experimenting with uploading different formats, ie byte arrays and avoiding form data
+   
     console.log('upload clicked');
     e.preventDefault();
 
-    const data = new FormData();
-    data.append('fileArray', this.state.selectedFile);
+    // THIS WORKS!!! NOW WORK FROM SERVER.JS to parse the byte array!!!
+    let data = new Uint8Array(this.state.selectedFile);
 
 
     // send post request to server with image files in array 
@@ -38,6 +40,7 @@ class App extends Component {
       fetch('http://localhost:8080/upload', {
         method: 'POST',
         body: data,
+        headers: {'Content-Type':'img/jpg'}
       }).then(res => {
         res.json().then(body => {
           this.setState({ imageURL: `http://localhost:8080/${body.file}` });

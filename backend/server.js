@@ -50,24 +50,28 @@ app.get("/", (req, res) => {
 
 app.post('/upload', upload.any('fileArray'), (req, res) => {
   // convert the uploaded images to form
+
+  //TODO: TODO: EDIT TO PARSE UINT8 DATA!!! no more form data TODO: TODO:
   var form = new FormData();
   form.append('imgFile', fs.createReadStream('req.file'));
   console.log('opening post of server.js, file: ', req.file);
-	res.json({'msg': 'File uploaded successfully to node'});
+	res.json({'msg': 'File uploaded successfully to node', 'form buffer?': req.file});
 
-  // need to determine if this is actually how to access the stream data? 
+  // TODO: send the byte array instead of the form with appropraite headers
   imagesRef.push({
     title: 'imgUpload' + Date.now(),
     image: form._streams[0]
   });
 
+  // attempting to get download urls
+
   // let url = ref.getDownloadUrl();
   // console.log('url?? ', url);
 
-  ref.on("value", function(snapshot) {
-    console.log('download url: ', snapshot.val());
-  }, function (errorObject) {
-    console.log("The read failed: " + errorObject.code);
-  });
+  // ref.on("value", function(snapshot) {
+  //   console.log('download url: ', snapshot.databaseURL());
+  // }, function (errorObject) {
+  //   console.log("The read failed: " + errorObject.code);
+  // });
 
 });
