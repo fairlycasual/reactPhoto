@@ -13,6 +13,7 @@ const fs = require('fs');
 const admin = require('firebase-admin');
 var Busboy = require('busboy');
 const serviceAccount = require("../reactphoto-332d3-firebase-adminsdk-2o0k8-86f07ff19b.json");
+const firebase = require('firebase');
 
 const app = express();
 const port = 8080;
@@ -50,16 +51,10 @@ app.get("/", (req, res) => {
 
 app.post('/upload', (req, res) => {
 
-  console.log('/upload, url string? ', req.body);
-  //TODO: TODO: EDIT TO PARSE UINT8 DATA!!! no more form data TODO: TODO:
-  // let form = new FormData();
-  // form.append('imgFile', fs.createReadStream('req.file'));
-  // console.log('opening post of server.js, req.body: ', req.body);
-	// res.json({'msg': 'File uploaded successfully to node', 'form buffer? req.file': req.file});
+  console.log('/upload, req.body: ', req.body);
 
-  // TODO: send the byte array instead of the form with appropraite headers
-  imagesRef.putString(req.body, 'data_url').then((snapshot) => {
-    console.log('uploaded a url string', req.body);
+  imagesRef.put(req.body).then((snapshot) => {
+    console.log('uploaded an arraybuffer!');
   })
 
   // attempting to get download urls
