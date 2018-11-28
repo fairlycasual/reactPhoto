@@ -42,8 +42,6 @@ class App extends Component {
     const reader = new FileReader();
 
     if (file) {
-      console.log('in uploadFile 1st conditional, this.file: ', file);
-      
       reader.onload = () => {
         console.log('in reader addEventListener, result: ', reader.result);
 
@@ -53,6 +51,7 @@ class App extends Component {
         let formData = new FormData();
 
         formData.append('fileArray', uint8array);
+        formData.append('imageTitle', this.file.name);
         // TODO: chunk file and blob the chunks by iterating over the length of the uint8array?
 
         fetch('http://localhost:8080/upload', {

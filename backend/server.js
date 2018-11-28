@@ -1,17 +1,11 @@
 "use strict";
-
 const express = require('express');
 const fileUpload = require('express-fileupload');
 const path = require('path');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const Blob = require('blob');
-const multer = require('multer');
-const FormData = require('form-data');
-const fs = require('fs');
 const admin = require('firebase-admin');
-var Busboy = require('busboy');
 const serviceAccount = require("../reactphoto-332d3-firebase-adminsdk-2o0k8-86f07ff19b.json");
 const firebase = require('firebase');
 require("firebase/storage");
@@ -33,16 +27,6 @@ app.listen(port);
 // serve static resources bundled by webpack
 app.use(express.static(__dirname + '/dist'));
 console.log('Server running on port: ' + port + ' 🐶'); 
-// Multer is required to process file uploads and make them available via req.files.
-var storage = multer.memoryStorage();
-var upload = multer({ storage: storage })
-
-// Initialize Firebase
-// admin.initializeApp({
-//   credential: admin.credential.cert(serviceAccount),
-//   databaseURL: "https://reactphoto-332d3.firebaseio.com/",
-//   storageBucket: "reactphoto-332d3.appspot.com"
-// });
 
 const config = {
   credential: admin.credential.cert(serviceAccount),
@@ -54,7 +38,7 @@ const config = {
 firebase.initializeApp(config);
 
 // function to upload image to firebase
-async function uploadImage(file) {
+async function uploadImage(file, title) {
   try {
     let buffer = Buffer.from(file);
     let arrayBuffer = Uint8Array.from(buffer).buffer;
@@ -62,7 +46,7 @@ async function uploadImage(file) {
     const ref = firebase
       .storage()
       .ref("server/image-uploads")
-      .child("images");
+      .child(title);
 
     const snapshot = await ref.put(arrayBuffer);
     console.log('did this func work? ', snapshot);
@@ -70,11 +54,6 @@ async function uploadImage(file) {
     console.log(error);
   }
 }
-
-// initialize firebase storage
-// const storage = firebase.storage();
-// let ref = storage.ref("server/image-uploads");
-// let imagesRef = ref.child("images");
 
 // send the build html? 
 app.get("/", (req, res) => { 
@@ -84,13 +63,11 @@ app.get("/", (req, res) => {
 // upload file route
 app.post('/upload', (req, res) => {
 
-  //console.log('/upload, req.body: ', req.body.fileArray);
+  //console.log('/upload, req.body: ', req.body);
 
   console.log('finna call ref.put');
-  uploadImage(req.body.fileArray);
-  // firebase.storage().ref('server/image-uploads').child('images').put(req.body.fileArray).then((snapshot) => {
-  //   console.log('uploaded an arraybuffer!');
-  // })
+  uploadImage(req.body.fileArray, req.body.imageTitle);
+  console.log('image title: ', req.body.imageTitle)
   console.log('just called ref.put');
   // attempting to get download urls
   //let url = imagesRef.getDownloadUrl();
