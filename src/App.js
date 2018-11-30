@@ -1,6 +1,5 @@
 import React, { Component } from "react";
-//import FileReader from 'filereader';
-import Axios from "axios";
+import './app.css';
 
 class App extends Component {
   constructor(props) {
@@ -14,9 +13,11 @@ class App extends Component {
     this.file;
     this.fileInput = React.createRef();
     
-    
-    // bind all my functions here
-      // this.function = this.function.bind(this);
+    this.previewFile = this.previewFile.bind(this);
+    this.uploadFile = this.uploadFile.bind(this);
+    this.fileSelectHandler = this.fileSelectHandler.bind(this);
+    this.fileUploadHandler = this.fileUploadHandler.bind(this);
+    this.getPhotoHandler = this.getPhotoHandler.bind(this);
       
   }
 
@@ -36,45 +37,35 @@ class App extends Component {
     }
   }
 
-  // upload file similar to preview. 
+  // upload file handler
   uploadFile(file) {
     console.log('uploadFile() called, this.file: ', file);
     const reader = new FileReader();
 
     if (file) {
       reader.onload = () => {
-        console.log('in reader addEventListener, result: ', reader.result);
-
-        // TODO: make a uint8array of the read file to feed to the blobber? 
         let uint8array = new Uint8Array(reader.result);
-        console.log('uint8array: ', uint8array);
         let formData = new FormData();
 
         formData.append('fileArray', uint8array);
         formData.append('imageTitle', this.file.name);
-        // TODO: chunk file and blob the chunks by iterating over the length of the uint8array?
 
         fetch('http://localhost:8080/upload', {
           method: 'POST',
           body: formData,
-          //headers: { "Content-Type": "application/octet-stream" },
         }).then(res => {
           res.json().then(body => {
-            this.setState({ imageURL: `http://localhost:8080/${dataUrlString}` });
+            console.log(body);
           })
-        })
-        .then(res => {
-          console.log('res in fetch', res);
         })
      
       };
-      
       reader.readAsArrayBuffer(file);
     }
     else {
       console.log('no file mang');
     }
-}
+  }
 
   
   // select a file
@@ -88,23 +79,17 @@ class App extends Component {
   }
 
   // dispatch file to server
-  fileUploadHandler = (e) => {
-    // experimenting with uploading different formats, ie byte arrays and avoiding form data
-   
+  fileUploadHandler = (e, req, res) => {
     console.log('fileUploadHandler(), this.file: ', this.file);
     e.preventDefault();
     this.uploadFile(this.file);
-
-
-    // THIS WORKS!!! NOW WORK FROM SERVER.JS to parse the byte array!!!
-    //let urlString = reader.readAsDataURL(this.file);
-    //console.log('buffer in post: ', buffer);
-    //let data = new Uint8Array(urlString);
-
-
+    let preview = document.querySelector('img');
+    preview.src = '';
     }
 
-
+  // get photos from server
+  // will need to translate from byte array to a proper file and put into the array of photo objects for the gallery
+  // should I GET from node or just go direct from firebase?? 
   getPhotoHandler = () => {
     fetch('http://localhost:8080/read', {
       method: 'GET',
@@ -112,8 +97,7 @@ class App extends Component {
       res.arrayBuffer().then((buffer) => {
         var base64Flag = 'data:image/jpeg;base64,';
         var imageStr = arrayBufferToBase64(buffer);
-
-        document.querySelector('img').src = base64Flag + imageStr;
+        document.querySelector('imgGallery').src = base64Flag + imageStr;
       });
     });
   }
@@ -123,6 +107,8 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <div className="header">
+        </div>
         <div className="upload">
           <input type="file" id="input" name="imageUpload" onChange={this.fileSelectHandler} multiple ref = {(ref) => {this.uploadInput = ref;}}/>
           <button onClick={this.fileUploadHandler}>Upload!</button>
