@@ -17,7 +17,15 @@ module.exports = {
             loader: "html-loader"
           }
         ]
-      }
+      },
+      {
+        test: /\.css$/,
+        loader:[ 'style-loader', 'css-loader' ]
+      },
+      {
+        test: /\.(png|jpg)$/,
+        loader: 'url-loader'
+      },
     ]
   },
   plugins: [
