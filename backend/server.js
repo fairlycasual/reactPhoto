@@ -54,8 +54,12 @@ async function uploadImage(file, title) {
       .ref("server/image-urls");
 
     await ref.put(arrayBuffer);
-    let url = await firebase.storage().ref("server/image-uploads").child(title).getDownloadURL();
+    let url = await firebase.storage()
+      .ref("server/image-uploads")
+      .child(title)
+      .getDownloadURL();
 
+    // store the download urls in the specified database locaiton
     urlRef.push().set({
       [title]: url
     });
@@ -67,7 +71,7 @@ async function uploadImage(file, title) {
 // retrieve files from firebase
 let itemsArray;
 async function getImages() {
-  // create a ref for the realtime database to store download url object
+  // create a ref to the location of download urls in the database
   const urlRef = firebase
   .database()
   .ref("server/image-urls");
@@ -78,7 +82,7 @@ async function getImages() {
   })
 }
 
-// create an array of download URLs from firebase
+// create an array of download URLs from firebase snapshot object
 const snapshotToArray = (snapshot) => {
   var returnArr = [];
   snapshot.forEach(function(childSnapshot) {
@@ -102,7 +106,9 @@ app.post('/upload', async (req, res) => {
   promiseFunctions.push(uploadImage(req.body.fileArray, req.body.imageTitle));
   promiseFunctions.push(getImages());
 
+  // await promise resolutions, 
   await Promise.all(promiseFunctions);
   console.log('promise.all results: ', itemsArray);
+  // send array of url objects to client 
   res.send({urlList: itemsArray});
 });

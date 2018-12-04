@@ -5,7 +5,7 @@ body {
 
 .header {
   width: 100%;
-  height: 20%;
+  height: 15%;
   display: flex;
   position: absolute;
   background: url(../public/images/CampMinder-Logo-Green.png);
@@ -13,12 +13,13 @@ body {
   background-repeat: no-repeat;
   background-position: center; 
   padding-top: 2%;
+  vertical-align: center;
 }
 
 .upload {
   margin: auto;
   width: 50%;
-  height: 15%;
+  height: 10%;
   display: flex;
   justify-content: center;
   align-items: center;

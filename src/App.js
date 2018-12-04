@@ -8,6 +8,8 @@ class App extends Component {
       selectedFile: null,
       imageURL: '',
       loaded: 0,
+      firebaseImages: [],
+      images: [],
     }
 
     this.file;
@@ -39,9 +41,7 @@ class App extends Component {
 
   // upload file handler
   uploadFile(file) {
-    console.log('uploadFile() called, this.file: ', file);
     const reader = new FileReader();
-
     if (file) {
       reader.onload = () => {
         let uint8array = new Uint8Array(reader.result);
@@ -55,10 +55,12 @@ class App extends Component {
           body: formData,
         }).then(res => {
           res.json().then(body => {
-            console.log(body);
+            this.setState({
+              firebaseImages: body
+            });
+            console.log('this.state.firebaseImages: ', this.state.firebaseImages);
           })
         })
-     
       };
       reader.readAsArrayBuffer(file);
     }
@@ -69,18 +71,18 @@ class App extends Component {
 
   
   // select a file
-  fileSelectHandler = (event) => {
+  fileSelectHandler = (e) => {
     this.setState({
-      selectedFile: event.target.files[0],
+      // iterate e.target.files for multiple
+      selectedFile: e.target.files[0],
     })
     // iterate through the files array, generate preview and upload
-    this.previewFile(event.target.files[0]);
+    this.previewFile(e.target.files[0]);
     console.log('selected data: ', this.state.selectedFile);
   }
 
   // dispatch file to server
   fileUploadHandler = (e, req, res) => {
-    console.log('fileUploadHandler(), this.file: ', this.file);
     e.preventDefault();
     this.uploadFile(this.file);
     let preview = document.querySelector('img');
@@ -91,16 +93,32 @@ class App extends Component {
   // will need to translate from byte array to a proper file and put into the array of photo objects for the gallery
   // should I GET from node or just go direct from firebase?? 
   getPhotoHandler = () => {
-    fetch('http://localhost:8080/read', {
-      method: 'GET',
-    }).then((res) => {
-      res.arrayBuffer().then((buffer) => {
-        var base64Flag = 'data:image/jpeg;base64,';
-        var imageStr = arrayBufferToBase64(buffer);
-        document.querySelector('imgGallery').src = base64Flag + imageStr;
-      });
-    });
+    console.log('get clicked');
+    let imagesUrlObject = this.state.firebaseImages;
+    console.log('imagesArray: ', imagesUrlObject['urlList'])
+    for (let i = 0; i < imagesUrlObject['urlList'].length; i++) {
+      let url = imagesUrlObject['urlList'][i][Object.keys(imagesUrlObject['urlList'][i])[0]]
+      console.log('testing url in getPhoto, url: ', url);
+        fetch(url, {
+          method: 'GET',
+        }).then((response) => {
+          return response.body.arrayBuffer()})
+            .then((buffer) => {
+              console.log('in response of fetch, buffer: ', buffer);
+              let blob = new Blob(buffer['[[Uint8Array]]'], 'image/jpg');
+              let imageSource = {
+                original: blob,
+                thumbnail: blob
+              }
+
+              this.state.images.push(imageSource);
+              console.log('this.state.images: ', this.state.images);
+              //document.querySelector('imgGallery').src = base64Flag + imageStr;
+          });
+        }
+      
   }
+  
 
   // component did mount to generate gallery
 
@@ -116,7 +134,9 @@ class App extends Component {
         <div className="preview">
           <img></img>
         </div>
-       
+        <button onClick={this.getPhotoHandler}>TEST</button>
+        <div className="imgGallery">
+        </div>
       </div>
     )
   }
